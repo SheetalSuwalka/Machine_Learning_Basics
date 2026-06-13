@@ -1,0 +1,16 @@
+# Ignore everything by default
+*
+.*
+
+# Allow Git to look inside folders
+!*/
+
+# Only allow these specific file extensions
+!*.ipynb
+!*.py
+!*.html
+!*.rmd
+!*.R
+
+# Keep the gitignore file itself tracked
+!.gitignore
