@@ -13,6 +13,7 @@
 !*.rmd
 !*.R
 !*.md
+!*.png
 !*.r
 
 # Explicitly ignore python virtual environments and checkpoints
