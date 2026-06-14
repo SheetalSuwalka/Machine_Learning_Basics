@@ -1,0 +1,22 @@
+# Ignore everything by default
+*
+.*
+
+# Allow Git to look inside folders
+!**/
+
+# Only allow these specific file extensions
+!*.ipynb
+!*.py
+!*.sql
+!*.html
+!*.rmd
+!*.R
+!*.r
+
+# Explicitly ignore python virtual environments and checkpoints
+.venv/
+.ipynb_checkpoints/
+
+# Keep the gitignore file itself tracked
+!.gitignore
