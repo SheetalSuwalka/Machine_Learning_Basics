@@ -12,6 +12,7 @@
 !*.html
 !*.rmd
 !*.R
+!*.md
 !*.r
 
 # Explicitly ignore python virtual environments and checkpoints
