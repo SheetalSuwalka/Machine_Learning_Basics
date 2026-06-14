@@ -7,11 +7,16 @@ Run:  streamlit run app.py
 import os
 import json
 import datetime
+import pandas as pd
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+from agent_trace import clear_trace_log, log_trace, log_state, log_prompt
+
+clear_trace_log()
 
 load_dotenv()
+log_trace("Streamlit app loaded")
 
 # ── Page config ────────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -278,6 +283,18 @@ def normalize_text_content(content) -> str:
     return str(content)
 
 
+# ── Helper: load city suggestions from airport data ────────────────────────
+def load_city_suggestions() -> list[str]:
+    try:
+        df = pd.read_csv("airports_list.dat", header=None,
+                         names=['id', 'name', 'city', 'country', 'iata', 'icao', 'latitude', 'longitude', 'altitude', 'timezone', 'dst', 'tz_database_time_zone', 'type', 'source'])
+        cities = df["city"].dropna().astype(str).str.strip()
+        cities = sorted({city for city in cities if city})
+        return cities
+    except Exception:
+        return ["Delhi", "Mumbai", "Bengaluru", "Dubai", "Singapore", "London"]
+
+
 # ── Helper: format price Indian style ─────────────────────────────────────────
 def fmt_inr(amount: int) -> str:
     """Format 123456 → ₹1,23,456"""
@@ -309,16 +326,21 @@ with st.container():
     st.markdown('<div class="search-card">', unsafe_allow_html=True)
     col1, col2, col3, col4 = st.columns([2, 2, 1.5, 1])
 
+    city_suggestions = load_city_suggestions()
+
     with col1:
-        origin = st.text_input(
+        origin = st.selectbox(
             "🛫 From (city name)",
-            placeholder="e.g. Delhi, Mumbai, Bengaluru",
-            help="Type any city name — the agent resolves the airport code"
+            options=city_suggestions,
+            index=city_suggestions.index("Delhi") if "Delhi" in city_suggestions else 0,
+            help="Choose a city from the list to avoid typo-based errors"
         )
     with col2:
-        destination = st.text_input(
+        destination = st.selectbox(
             "🛬 To (city name)",
-            placeholder="e.g. Dubai, London, Singapore"
+            options=city_suggestions,
+            index=city_suggestions.index("Dubai") if "Dubai" in city_suggestions else 0,
+            help="Choose a destination from the list"
         )
     with col3:
         min_date = datetime.date.today() + datetime.timedelta(days=1)
@@ -347,6 +369,7 @@ with st.container():
 
 # ── Run agent on search ────────────────────────────────────────────────────────
 if search_clicked:
+    log_trace(f"Search button clicked: from={origin.strip()} to={destination.strip()} date={travel_date.strftime('%Y-%m-%d')}")
     # Validate inputs
     if not origin.strip():
         st.error("Please enter an origin city.")
@@ -363,6 +386,9 @@ if search_clicked:
     from prompts import build_system_prompt
     from graph import flight_agent
     from state import FlightAgentState
+    from agent_trace import log_trace
+
+    log_trace(f"Search started for {origin.strip()} → {destination.strip()} on {date_str}", step="UI")
 
     system_prompt = build_system_prompt(
         origin=origin.strip(),
@@ -379,13 +405,15 @@ if search_clicked:
                 f"Find flights from {origin.strip()} to {destination.strip()} "
                 f"on {date_str} for {adults} adult(s). "
                 f"User preference: {preference.strip()}"
-            )),
-        ],
+            )),],
         "origin_iata": None,
         "destination_iata": None,
         "flight_results": None,
         "agent_steps": [],
     }
+
+    log_state("Initial state", initial_state)
+    log_prompt(system_prompt)
 
     # ── Two-column layout: trace | results ────────────────────────────────────
     trace_col, result_col = st.columns([1, 1.8])

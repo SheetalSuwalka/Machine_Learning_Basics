@@ -12,6 +12,8 @@ import pandas as pd
 from functools import lru_cache
 from langchain_core.tools import tool
 
+from agent_trace import log_trace, log_tool_call, log_tool_result
+
 
 SEARCHAPI_KEY = os.getenv("FLIGHT_SEARCH_API_key")
 
@@ -62,6 +64,7 @@ def lookup_airport_code(city_name: str) -> str:
         Returns top match first. If multiple matches exist, all are returned
         so the LLM can pick the most appropriate one.
     """
+    log_tool_call("lookup_airport_code", {"city_name": city_name})
     df = _load_airports()
     query = _normalize(city_name)
 
@@ -95,6 +98,26 @@ def lookup_airport_code(city_name: str) -> str:
     candidates = candidates.drop_duplicates(subset=["iata"]).head(5)
 
     if candidates.empty:
+        result = json.dumps({
+            "status": "not_found",
+            "message": f"No airport found matching '{city_name}'. "
+                       "Please try the full city name or an alternate spelling.",
+            "matches": []
+        })
+        log_tool_result("lookup_airport_code", result)
+        return result
+
+    matches = candidates[["name", "city", "country", "iata"]].to_dict(orient="records")
+    result = json.dumps({
+        "status": "found",
+        "query": city_name,
+        "matches": matches,
+        "best_match": matches[0]   # highest-priority hit
+    }, indent=2)
+    log_tool_result("lookup_airport_code", result)
+    return result
+
+    if candidates.empty:
         return json.dumps({
             "status": "not_found",
             "message": f"No airport found matching '{city_name}'. "
@@ -126,6 +149,7 @@ def search_robust_flights(departure_id: str, arrival_id: str, outbound_date: str
     Returns:
         A dictionary containing search status and a list of flight options.
     """
+    log_tool_call("search_robust_flights", {"departure_id": departure_id, "arrival_id": arrival_id, "outbound_date": outbound_date})
     url = "https://www.searchapi.io/api/v1/search"
     
     params = {
@@ -141,17 +165,21 @@ def search_robust_flights(departure_id: str, arrival_id: str, outbound_date: str
     }
     
     try:
-        print(f"📡 Querying Google Flights for {params['departure_id']} ➡️ {params['arrival_id']} on {params['outbound_date']}...\n")
+        log_trace(f"Querying Google Flights for {params['departure_id']} ➡️ {params['arrival_id']} on {params['outbound_date']}", step="TOOL")
         response = requests.get(url, params=params)
         
         if response.status_code != 200:
-            return {"status": "error", "message": f"API HTTP Error {response.status_code}"}
+            result = {"status": "error", "message": f"API HTTP Error {response.status_code}"}
+            log_tool_result("search_robust_flights", result)
+            return result
             
         data = response.json()
         raw_flights = data.get("best_flights") or data.get("other_flights") or []
         
         if not raw_flights:
-            return {"status": "success", "flights": []}
+            result = {"status": "success", "flights": []}
+            log_tool_result("search_robust_flights", result)
+            return result
             
         final_selections = []
         
@@ -186,10 +214,14 @@ def search_robust_flights(departure_id: str, arrival_id: str, outbound_date: str
 
 
             
-        return {"status": "success", "flights": final_selections}
+        result = {"status": "success", "flights": final_selections}
+        log_tool_result("search_robust_flights", result)
+        return result
         
     except Exception as e:
-        return {"status": "error", "message": str(e)}
+        result = {"status": "error", "message": str(e)}
+        log_tool_result("search_robust_flights", result)
+        return result
 
 
 # ─── Exported list ────────────────────────────────────────────────────────────

@@ -18,6 +18,7 @@ from langgraph.prebuilt import ToolNode
 
 from state import FlightAgentState
 from tools import ALL_TOOLS
+from agent_trace import log_trace, log_state, log_llm_decision, log_tool_call, log_tool_result
 
 load_dotenv()
 
@@ -38,15 +39,23 @@ def _build_llm():
 # ── Nodes ──────────────────────────────────────────────────────────────────────
 
 def llm_node(state: FlightAgentState) -> dict:
+    log_state("LLM node received state", state)
     llm = _build_llm()
     response = llm.invoke(state["messages"])
+    log_llm_decision("LLM response received")
+    if getattr(response, "tool_calls", None):
+        log_llm_decision(f"LLM requested tool calls: {response.tool_calls}")
+    else:
+        log_llm_decision("LLM produced a final answer")
     return {"messages": [response]}
 
 
 def should_continue(state: FlightAgentState) -> str:
     last = state["messages"][-1]
     if isinstance(last, AIMessage) and getattr(last, "tool_calls", None):
+        log_trace("Routing to tool node", step="GRAPH")
         return "tools"
+    log_trace("Routing to END", step="GRAPH")
     return "end"
 
 

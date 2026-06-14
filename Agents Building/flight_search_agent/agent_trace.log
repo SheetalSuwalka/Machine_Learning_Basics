@@ -1,0 +1,173 @@
+2026-06-14 19:54:12 | INFO | [TRACE] Streamlit app loaded
+2026-06-14 19:54:12 | INFO | [TRACE] Search button clicked: from=Delhi to=Dubai date=2026-06-15
+2026-06-14 19:54:14 | INFO | [UI] Search started for Delhi → Dubai on 2026-06-15
+2026-06-14 19:54:14 | INFO | [STATE] Initial state:
+messages: 2
+last_message_type: HumanMessage
+last_message_preview: Find flights from Delhi to Dubai on 2026-06-15 for 1 adult(s). User preference: jhhj
+origin_iata: None
+destination_iata: None
+flight_results: None
+agent_steps: 0
+2026-06-14 19:54:14 | INFO | [PROMPT] System prompt prepared:
+You are FlightBot, a smart flight search assistant. Today is 2026-06-14.\n\nThe user has already filled in a search
+  form. Here are their details:\n  Origin city     : Delhi\n  Destination city: Dubai\n  Travel date     : 2026-06-15\n
+  Passengers      : 1 adult(s)\n  Their preference: "jhhj"\n\n═══════════════════════════════════\nYOUR
+  TOOLS\n═══════════════════════════════════\n1. lookup_airport_code(city_name: str)\n   → Searches the local airport
+  database for a city and returns its IATA code.\n   → Always call this for BOTH origin and destination before searching
+  flights.\n   → Use the "best_match.iata" field from the result.\n\n2. search_robust_flights(departure_id: str,
+  arrival_id: str, outbound_date: str)\n   → Calls Google Flights via SearchAPI.\n   → departure_id / arrival_id must be
+  3-letter IATA codes (e.g. DEL, BOM, DXB).\n   → outbound_date must be in YYYY-MM-DD format.\n   → Returns a list of
+  flights with: airline, price_raw (INR integer),\n     duration_mins, duration_str, stops, departure_time,
+  arrival_time.\n\n═══════════════════════════════════\nYOUR WORKFLOW  (follow
+  exactly)\n═══════════════════════════════════\nStep 1 — Call lookup_airport_code("Delhi")\nStep 2 — Call
+  lookup_airport_code("Dubai")\nStep 3 — Call search_robust_flights with the two IATA codes and date "2026-06-15"\nStep
+  4 — Analyse results and write your final response (see format below)\n\n═══════════════════════════════════\nFINAL
+  RESPONSE FORMAT\n═══════════════════════════════════\nAfter the tools return data, write a clean summary. Structure it
+  like this:\n\n**✈️ [Origin City] → [Destination City] | [Date] | [N] passenger(s)**\n\nThen, based on the user
+  preference ("jhhj"), rank and highlight:\n\nFor EACH of the top 3–5 flights show:\n  🏷️ **[Airline]**\n  💰 Price   :
+  ₹[price wit...
+2026-06-14 19:54:14 | INFO | [STATE] LLM node received state:
+messages: 2
+last_message_type: HumanMessage
+last_message_preview: Find flights from Delhi to Dubai on 2026-06-15 for 1 adult(s). User preference: jhhj
+origin_iata: None
+destination_iata: None
+flight_results: None
+agent_steps: 0
+2026-06-14 19:54:15 | INFO | [LLM] LLM response received
+2026-06-14 19:54:15 | INFO | [LLM] LLM requested tool calls: [{'name': 'lookup_airport_code', 'args': {'city_name': 'Delhi'}, 'id': 'E5vqla2Z', 'type':
+  'tool_call'}, {'name': 'lookup_airport_code', 'args': {'city_name': 'Dubai'}, 'id': 'RIGC4QHk', 'type': 'tool_call'}]
+2026-06-14 19:54:15 | INFO | [GRAPH] Routing to tool node
+2026-06-14 19:54:15 | INFO | [TOOL] Calling tool=lookup_airport_code args={
+  "city_name": "Dubai"
+}
+2026-06-14 19:54:15 | INFO | [TOOL] Calling tool=lookup_airport_code args={
+  "city_name": "Delhi"
+}
+2026-06-14 19:54:15 | INFO | [RESULT] Tool=lookup_airport_code result={
+  "status": "found",
+  "query": "Delhi",
+  "matches": [
+    {
+      "name": "Safdarjung Airport",
+      "city": "Delhi",
+      "country": "India",
+      "iata": "\\N"
+    },
+    {
+      "name": "Indira Gandhi International Airport",
+      "city": "Delhi",
+      "country": "India",
+      "iata": "DEL"
+    }
+  ],
+  "best_match": {
+    "name": "Safdarjung Airport",
+    "city": "Delhi",
+    "country": "India",
+    "iata": "\\N"
+  }
+}
+2026-06-14 19:54:15 | INFO | [RESULT] Tool=lookup_airport_code result={
+  "status": "found",
+  "query": "Dubai",
+  "matches": [
+    {
+      "name": "Dubai International Airport",
+      "city": "Dubai",
+      "country": "United Arab Emirates",
+      "iata": "DXB"
+    },
+    {
+      "name": "Al Maktoum International Airport",
+      "city": "Dubai",
+      "country": "United Arab Emirates",
+      "iata": "DWC"
+    }
+  ],
+  "best_match": {
+    "name": "Dubai International Airport",
+    "city": "Dubai",
+    "country": "United Arab Emirates",
+    "iata": "DXB"
+  }
+}
+2026-06-14 19:54:15 | INFO | [STATE] LLM node received state:
+messages: 5
+last_message_type: ToolMessage
+last_message_preview: {   "status": "found",   "query": "Dubai",   "matches": [     {       "name": "Dubai International
+  Airport",       "city": "Dubai",       "country": "United Arab Emirates",       "iata": "DXB"     },     {
+  "name": "Al Maktoum International Airport",       "city": "Dubai",       "country": "United Arab Emirates",
+  "iata": "DWC"     }   ],   "best_match": {     "name": "Dubai International Airport",     "city": "Dubai",
+  "country": "United Arab Emirates",     "iata": "DXB"   } }
+origin_iata: None
+destination_iata: None
+flight_results: None
+agent_steps: 0
+2026-06-14 19:54:27 | INFO | [LLM] LLM response received
+2026-06-14 19:54:27 | INFO | [LLM] LLM requested tool calls: [{'name': 'search_robust_flights', 'args': {'arrival_id': 'DXB', 'departure_id': 'DEL',
+  'outbound_date': '2026-06-15'}, 'id': '7yPoZlzd', 'type': 'tool_call'}]
+2026-06-14 19:54:27 | INFO | [GRAPH] Routing to tool node
+2026-06-14 19:54:27 | INFO | [TOOL] Calling tool=search_robust_flights args={
+  "departure_id": "DEL",
+  "arrival_id": "DXB",
+  "outbound_date": "2026-06-15"
+}
+2026-06-14 19:54:27 | INFO | [TOOL] Querying Google Flights for DEL ➡️ DXB on 2026-06-15
+2026-06-14 19:54:33 | INFO | [RESULT] Tool=search_robust_flights result={
+  "status": "success",
+  "flights": [
+    {
+      "airline": "Gulf Air",
+      "price_raw": 22069,
+      "duration_mins": 480,
+      "duration_str": "8h 0m",
+      "stops": "1 Stop(s)",
+      "departure_time": "04:55",
+      "arrival_time": "11:25"
+    },
+    {
+      "airline": "SpiceJet",
+      "price_raw": 22345,
+      "duration_mins": 235,
+      "duration_str": "3h 55m",
+      "stops": "Non-stop",
+      "departure_time": "07:35",
+      "arrival_time": "10:00"
+    },
+    {
+      "airline": "IndiGo",
+      "price_raw": 25322,
+      "duration_mins": 230,
+      "duration_str": "3h 50m",
+      "stops": "Non-stop",
+      "departure_time": "08:35",
+      "arrival_time": "10:55"
+    },
+    {
+      "airline": "Air India",
+      "price_raw": 27410,
+      "duration_mins": 225,
+      "duration_str": "3h 45m",
+      "stops": "Non-stop",
+      "departure_time": "01:45",
+      "arrival_time": "04:00"
+    }
+  ]
+}
+2026-06-14 19:54:33 | INFO | [STATE] LLM node received state:
+messages: 7
+last_message_type: ToolMessage
+last_message_preview: {"status": "success", "flights": [{"airline": "Gulf Air", "price_raw": 22069, "duration_mins":
+  480, "duration_str": "8h 0m", "stops": "1 Stop(s)", "departure_time": "04:55", "arrival_time": "11:25"}, {"airline":
+  "SpiceJet", "price_raw": 22345, "duration_mins": 235, "duration_str": "3h 55m", "stops": "Non-stop", "departure_time":
+  "07:35", "arrival_time": "10:00"}, {"airline": "IndiGo", "price_raw": 25322, "duration_mins": 230, "duration_str": "3h
+  50m", "stops": "Non-stop", "departure_time": "0...
+origin_iata: None
+destination_iata: None
+flight_results: None
+agent_steps: 0
+2026-06-14 19:54:36 | INFO | [LLM] LLM response received
+2026-06-14 19:54:36 | INFO | [LLM] LLM produced a final answer
+2026-06-14 19:54:36 | INFO | [GRAPH] Routing to END

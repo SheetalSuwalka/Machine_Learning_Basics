@@ -15,6 +15,7 @@
 !*.md
 !*.png
 !*.r
+!*.log
 
 # Explicitly ignore python virtual environments and checkpoints
 .venv/

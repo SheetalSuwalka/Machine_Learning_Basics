@@ -16,3 +16,4 @@ class FlightAgentState(TypedDict):
 
     # UI: log of reasoning steps shown to the user
     agent_steps: Annotated[list[str], operator.add]
+
